@@ -1,0 +1,23 @@
+Function logoutnow () {
+  if (Get-LocalGroupMember -Group "Пользователи удаленного рабочего стола" -Member $UserName -ErrorAction SilentlyContinue) {
+    Remove-LocalGroupMember -Group "Пользователи удаленного рабочего стола" -Member $UserName
+    (Get-WmiObject -Class Win32_OperatingSystem).Win32Shutdown(0)
+  }
+}
+$UserName = (Get-WmiObject -Class Win32_ComputerSystem | select username).username.ToString().Split('\')[1]
+$SourcePath = "C:\Windows\Web\4K\Wallpaper\Windows\"
+$DistPath = "C:\Users\",$UserName,"\Desktop\Wallpaper\" -join ""
+mkdir $DistPath -ErrorAction SilentlyContinue
+cp $SourcePath* $DistPath
+Wait-Event -Timeout 30
+$FlagFile = Test-Path ($DistPath,"img0_2160x3840.jpg" -join "")
+if ($FlagFile -eq "True") {
+  logoutnow
+}
+else {
+  $fileCount = (Get-ChildItem $DistPath).Count
+  if ($fileCount -ne 8) {
+    logoutnow
+  }
+  else { calc.exe}
+}
